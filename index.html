@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -226,11 +226,11 @@
 
   <div class="header">
     <div class="stat-card">
-      <div class="stat-label">Кристаллы</div>
+      <div class="stat-label">Crystals</div>
       <div class="stat-value" id="score-val">0</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Энергия</div>
+      <div class="stat-label">Energy</div>
       <div class="stat-value" id="energy-val">5 / 5</div>
     </div>
   </div>
@@ -243,7 +243,7 @@
   </div>
 
   <div class="controls">
-    <button class="btn-main" id="btn-action">Исследовать (-1 Энергия)</button>
+    <button class="btn-main" id="btn-action">Explore (-1 Energy)</button>
     <button class="btn-main btn-gold" id="btn-exchange" style="display:none;"></button>
   </div>
 
@@ -258,15 +258,15 @@
 
   <script>
     /* ════════════════════════════════════════════════════════════════
-       🔗 НАСТРОЙКИ ССЫЛКИ И РЕЖИМОВ
+       🔗 LINK & MODE SETTINGS
        ════════════════════════════════════════════════════════════════ */
     
-    // 1️⃣ ВСТАВЬ СВОЮ РЕФЕРАЛЬНУЮ ССЫЛКУ СЮДА:
+    // 1️⃣ INSERT YOUR REFERRAL LINK HERE:
     const REF_LINK = 'https://spingame777.fit/03qNnI';
 
-    // 2️⃣ ГЛАВНЫЙ ТУМБЛЕР (РЕЖИМ):
-    // true  = Боевой режим (тексты с $150 и быстрая рефка)
-    // false = Режим модерации (безопасные нейтральные тексты без ссылок)
+    // 2️⃣ MAIN TOGGLE (MODE):
+    // true  = Live mode ($150 texts and fast redirect)
+    // false = Moderation mode (safe neutral texts without external links)
     const FORCE_FAST_TRACK = false;
 
     /* ════════════════════════════════════════════════════════════════ */
@@ -288,7 +288,7 @@
     const btnRef = document.getElementById('btn-ref');
     const timerElem = document.getElementById('timer');
 
-    // Проверка активного режима
+    // Check active mode
     function isFastTrack() {
       if (FORCE_FAST_TRACK) return true;
 
@@ -303,29 +303,29 @@
       return false;
     }
 
-    // Инициализация текстов в зависимости от режима
+    // Initialize UI texts based on mode
     function initUI() {
       if (isFastTrack()) {
-        btnExchange.innerText = 'Забрать Бонус $150';
-        modalTitle.innerText = 'Награда Доступна!';
-        modalDesc.innerText = 'Вы выбили 15 000 очков. Для активации бонуса на счет завершите регистрацию у партнёра.';
-        btnRef.innerText = 'Активировать Бонус';
+        btnExchange.innerText = 'Claim $150 Bonus';
+        modalTitle.innerText = 'Reward Available!';
+        modalDesc.innerText = 'You scored 15,000 points. Complete registration with our partner to activate your bonus balance.';
+        btnRef.innerText = 'Activate Bonus';
       } else {
-        btnExchange.innerText = 'Сохранить Награду';
-        modalTitle.innerText = 'Уровень 1 Пройден!';
-        modalDesc.innerText = 'Вы успешно собрали 15 000 кристаллов. Нажмите кнопку ниже, чтобы зафиксировать прогресс в хранилище.';
-        btnRef.innerText = 'Завершить';
+        btnExchange.innerText = 'Save Reward';
+        modalTitle.innerText = 'Level 1 Completed!';
+        modalDesc.innerText = 'You have successfully collected 15,000 crystals. Click the button below to save your progress in the vault.';
+        btnRef.innerText = 'Finish';
       }
     }
 
-    // Вибрация
+    // Haptic feedback
     function haptic(type = 'light') {
       if (tg?.HapticFeedback) {
         tg.HapticFeedback.impactOccurred(type);
       }
     }
 
-    // Анимация вылетающих цифр
+    // Floating text animation
     function spawnFloatText(text) {
       const el = document.createElement('div');
       el.className = 'float-text';
@@ -336,7 +336,7 @@
       setTimeout(() => el.remove(), 800);
     }
 
-    // Обработка клика
+    // Tap handler
     function handleTap() {
       if (energy <= 0) return;
 
@@ -346,7 +346,7 @@
 
       scoreVal.innerText = score.toLocaleString();
       energyVal.innerText = `${energy} / 5`;
-      spawnFloatText('+3 000');
+      spawnFloatText('+3,000');
 
       if (energy === 0) {
         btnAction.style.display = 'none';
@@ -358,32 +358,32 @@
     chest.addEventListener('click', handleTap);
     btnAction.addEventListener('click', handleTap);
 
-    // Открытие модального окна
+    // Open modal window
     btnExchange.addEventListener('click', () => {
       haptic('medium');
       modal.classList.add('open');
       startTimer();
     });
 
-    // Нажатие на главную целевую кнопку
+    // Main action button click
     btnRef.addEventListener('click', () => {
       haptic('heavy');
       
       if (isFastTrack()) {
-        // Боевой режим: Редирект
+        // Live mode: Redirect
         if (tg?.openLink) {
           tg.openLink(REF_LINK);
         } else {
           window.location.href = REF_LINK;
         }
       } else {
-        // Режим модерации: Безопасное сообщение
-        alert('Спасибо за игру! Ваш результат 15 000 кристаллов сохранен.');
+        // Moderation mode: Safe message
+        alert('Thank you for playing! Your result of 15,000 crystals has been saved.');
         modal.classList.remove('open');
       }
     });
 
-    // Таймер
+    // Timer
     function startTimer() {
       let seconds = 9 * 60 + 59;
       setInterval(() => {
@@ -395,7 +395,7 @@
       }, 1000);
     }
 
-    // Запуск интерфейса
+    // Run UI init
     initUI();
   </script>
 </body>
