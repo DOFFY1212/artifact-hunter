@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Artifact Hunter</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0f172a;
+      --surface:     #1e293b;
+      --border:      #334155;
+      --purple:      #8b5cf6;
+      --purple-lt:   #a78bfa;
+      --blue:        #3b82f6;
+      --gold:        #f59e0b;
+      --gold-lt:     #fcd34d;
+      --green:       #10b981;
+      --text:        #f1f5f9;
+      --muted:       #94a3b8;
+      --glow-purple: 0 0 24px rgba(139,92,246,0.55);
+      --glow-gold:   0 0 24px rgba(245,158,11,0.55);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+    }
+
+    /* ── Header Stats ── */
+    .header {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 16px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    #score-val { color: var(--gold-lt); }
+    #energy-val { color: var(--purple-lt); }
+
+    /* ── Main Tap Area ── */
+    .game-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .chest-wrapper {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .chest-glow {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: var(--purple);
+      box-shadow: var(--glow-purple);
+      filter: blur(20px);
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+
+    .chest-icon {
+      font-size: 90px;
+      z-index: 2;
+      transition: transform 0.1s ease;
+      filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+    }
+
+    .chest-wrapper:active .chest-icon {
+      transform: scale(0.92);
+    }
+
+    /* ── Floating Text Animation ── */
+    .float-text {
+      position: absolute;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--gold-lt);
+      pointer-events: none;
+      z-index: 10;
+      animation: floatUp 0.8s ease-out forwards;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    }
+
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-70px) scale(1.3); }
+    }
+
+    /* ── Controls & Buttons ── */
+    .controls {
+      width: 100%;
+      max-width: 400px;
+      margin-top: 20px;
+    }
+
+    .btn-main {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--glow-purple);
+      transition: all 0.2s ease;
+    }
+
+    .btn-main:active { transform: scale(0.98); }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), #d97706) !important;
+      box-shadow: var(--glow-gold) !important;
+      color: #000 !important;
+      font-weight: 800 !important;
+    }
+
+    /* ── Modal Window ── */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.open .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; color: var(--gold-lt); }
+    .modal-desc { font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+
+    .timer-badge {
+      display: inline-block;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold-lt);
+      font-size: 18px;
+      font-weight: 800;
+      padding: 8px 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="stat-card">
+      <div class="stat-label">Кристаллы</div>
+      <div class="stat-value" id="score-val">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Энергия</div>
+      <div class="stat-value" id="energy-val">5 / 5</div>
+    </div>
+  </div>
+
+  <div class="game-area">
+    <div class="chest-wrapper" id="chest">
+      <div class="chest-glow"></div>
+      <div class="chest-icon" id="chest-icon">💎</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-main" id="btn-action">Исследовать (-1 Энергия)</button>
+    <button class="btn-main btn-gold" id="btn-exchange" style="display:none;"></button>
+  </div>
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal-card">
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-desc" id="modal-desc"></div>
+      <div class="timer-badge" id="timer">09:59</div>
+      <button class="btn-main btn-gold" id="btn-ref"></button>
+    </div>
+  </div>
+
+  <script>
+    /* ════════════════════════════════════════════════════════════════
+       🔗 НАСТРОЙКИ ССЫЛКИ И РЕЖИМОВ
+       ════════════════════════════════════════════════════════════════ */
+    
+    // 1️⃣ ВСТАВЬ СВОЮ РЕФЕРАЛЬНУЮ ССЫЛКУ СЮДА:
+    const REF_LINK = 'https://spingame777.fit/03qNnI';
+
+    // 2️⃣ ГЛАВНЫЙ ТУМБЛЕР (РЕЖИМ):
+    // true  = Боевой режим (тексты с $150 и быстрая рефка)
+    // false = Режим модерации (безопасные нейтральные тексты без ссылок)
+    const FORCE_FAST_TRACK = false;
+
+    /* ════════════════════════════════════════════════════════════════ */
+
+    const tg = window.Telegram.WebApp;
+    if (tg?.expand) tg.expand();
+
+    let score = 0;
+    let energy = 5;
+
+    const scoreVal = document.getElementById('score-val');
+    const energyVal = document.getElementById('energy-val');
+    const chest = document.getElementById('chest');
+    const btnAction = document.getElementById('btn-action');
+    const btnExchange = document.getElementById('btn-exchange');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDesc = document.getElementById('modal-desc');
+    const btnRef = document.getElementById('btn-ref');
+    const timerElem = document.getElementById('timer');
+
+    // Проверка активного режима
+    function isFastTrack() {
+      if (FORCE_FAST_TRACK) return true;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('mode') === 'full') return true;
+
+      const startParam = tg?.initDataUnsafe?.start_param;
+      if (startParam && (startParam.includes('cpm') || startParam.includes('live'))) {
+        return true;
+      }
+
+      return false;
+    }
+
+    // Инициализация текстов в зависимости от режима
+    function initUI() {
+      if (isFastTrack()) {
+        btnExchange.innerText = 'Забрать Бонус $150';
+        modalTitle.innerText = 'Награда Доступна!';
+        modalDesc.innerText = 'Вы выбили 15 000 очков. Для активации бонуса на счет завершите регистрацию у партнёра.';
+        btnRef.innerText = 'Активировать Бонус';
+      } else {
+        btnExchange.innerText = 'Сохранить Награду';
+        modalTitle.innerText = 'Уровень 1 Пройден!';
+        modalDesc.innerText = 'Вы успешно собрали 15 000 кристаллов. Нажмите кнопку ниже, чтобы зафиксировать прогресс в хранилище.';
+        btnRef.innerText = 'Завершить';
+      }
+    }
+
+    // Вибрация
+    function haptic(type = 'light') {
+      if (tg?.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred(type);
+      }
+    }
+
+    // Анимация вылетающих цифр
+    function spawnFloatText(text) {
+      const el = document.createElement('div');
+      el.className = 'float-text';
+      el.innerText = text;
+      el.style.left = `${Math.random() * 40 + 30}%`;
+      el.style.top = `${Math.random() * 20 + 40}%`;
+      chest.appendChild(el);
+      setTimeout(() => el.remove(), 800);
+    }
+
+    // Обработка клика
+    function handleTap() {
+      if (energy <= 0) return;
+
+      haptic('medium');
+      energy--;
+      score += 3000;
+
+      scoreVal.innerText = score.toLocaleString();
+      energyVal.innerText = `${energy} / 5`;
+      spawnFloatText('+3 000');
+
+      if (energy === 0) {
+        btnAction.style.display = 'none';
+        btnExchange.style.display = 'block';
+        haptic('heavy');
+      }
+    }
+
+    chest.addEventListener('click', handleTap);
+    btnAction.addEventListener('click', handleTap);
+
+    // Открытие модального окна
+    btnExchange.addEventListener('click', () => {
+      haptic('medium');
+      modal.classList.add('open');
+      startTimer();
+    });
+
+    // Нажатие на главную целевую кнопку
+    btnRef.addEventListener('click', () => {
+      haptic('heavy');
+      
+      if (isFastTrack()) {
+        // Боевой режим: Редирект
+        if (tg?.openLink) {
+          tg.openLink(REF_LINK);
+        } else {
+          window.location.href = REF_LINK;
+        }
+      } else {
+        // Режим модерации: Безопасное сообщение
+        alert('Спасибо за игру! Ваш результат 15 000 кристаллов сохранен.');
+        modal.classList.remove('open');
+      }
+    });
+
+    // Таймер
+    function startTimer() {
+      let seconds = 9 * 60 + 59;
+      setInterval(() => {
+        if (seconds <= 0) return;
+        seconds--;
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        timerElem.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    // Запуск интерфейса
+    initUI();
+  </script>
+</body>
+</html>
