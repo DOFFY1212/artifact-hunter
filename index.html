@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -253,9 +253,6 @@
   .lb-avatar{width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; background:var(--bg-panel-alt); flex-shrink:0; border:1px solid var(--border-arcane);}
   .lb-name{flex:1; font-size:12.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .lb-score{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; color:var(--gold-bright); flex-shrink:0;}
-  .lb-sticky-me{
-    position:sticky; bottom:0; margin-top:8px;
-  }
 
   /* ---------- Tasks ---------- */
   .task-card{
@@ -307,6 +304,32 @@
   .settings-btn:active{ transform:scale(0.98); }
   .app-footer{ text-align:center; font-size:10px; color:var(--text-dim); margin-top:8px; line-height:1.6; }
 
+  /* ---------- Market Pulse (real-world, informational only) ---------- */
+  .pulse-card{
+    background:var(--bg-panel); border:1px solid var(--border-arcane); border-radius:14px;
+    padding:13px 14px; margin-bottom:10px;
+  }
+  .pulse-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;}
+  .pulse-title{font-family:'Cinzel',serif; font-weight:700; font-size:13px; color:var(--gold-bright); display:flex; align-items:center; gap:6px;}
+  .pulse-refresh{
+    font-size:10px; font-weight:700; color:var(--cyan); border:1px solid var(--cyan); border-radius:8px;
+    padding:4px 8px; background:rgba(79,232,216,0.08); cursor:pointer;
+  }
+  .pulse-refresh:active{ transform:scale(0.95); }
+  .pulse-refresh.spinning{ opacity:0.5; }
+  .pulse-sub{font-size:9.5px; color:var(--text-dim); margin-bottom:10px;}
+  .pulse-row{display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-top:1px solid var(--border-arcane-soft);}
+  .pulse-row:first-of-type{border-top:none;}
+  .pulse-coin{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700;}
+  .pulse-coin .sym{font-size:16px;}
+  .pulse-right{text-align:right;}
+  .pulse-price{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12.5px; color:var(--text-primary);}
+  .pulse-change{font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700;}
+  .pulse-change.up{color:var(--success);}
+  .pulse-change.down{color:var(--danger);}
+  .pulse-disclaimer{font-size:9px; color:var(--text-dim); margin-top:10px; line-height:1.5; border-top:1px dashed var(--border-arcane-soft); padding-top:8px;}
+  .pulse-updated{font-size:9px; color:var(--text-dim); margin-top:4px;}
+
   /* ---------- Bottom nav ---------- */
   #bottomnav{
     position:relative; z-index:5;
@@ -349,8 +372,8 @@
     <div class="profile-row">
       <div class="avatar" id="avatar">?</div>
       <div class="profile-meta">
-        <div class="profile-name" id="profileName">Охотник</div>
-        <div class="profile-title" id="profileTitle">Искатель Артефактов</div>
+        <div class="profile-name" id="profileName">Hunter</div>
+        <div class="profile-title" id="profileTitle">Artifact Seeker</div>
       </div>
     </div>
     <div class="balances">
@@ -358,14 +381,14 @@
         <div class="icon">💎</div>
         <div>
           <div class="val" id="crystalsVal">0</div>
-          <div class="lbl">Кристаллы</div>
+          <div class="lbl">Crystals</div>
         </div>
       </div>
       <div class="balance-chip seals">
         <div class="icon">🔱</div>
         <div>
           <div class="val" id="sealsVal">0</div>
-          <div class="lbl">Печати</div>
+          <div class="lbl">Ancient Seals</div>
         </div>
       </div>
     </div>
@@ -383,13 +406,13 @@
 
     <div class="screen active" id="screen-mine">
       <div class="mine-stats-row">
-        <div class="mini-stat"><div class="v" id="statClickPower">1</div><div class="l">За клик</div></div>
-        <div class="mini-stat"><div class="v" id="statCps">0</div><div class="l">В секунду</div></div>
-        <div class="mini-stat"><div class="v" id="statCrit">10%</div><div class="l">Шанс крита</div></div>
+        <div class="mini-stat"><div class="v" id="statClickPower">1</div><div class="l">Per Tap</div></div>
+        <div class="mini-stat"><div class="v" id="statCps">0</div><div class="l">Per Second</div></div>
+        <div class="mini-stat"><div class="v" id="statCrit">10%</div><div class="l">Crit Chance</div></div>
       </div>
       <div class="artifact-zone">
         <div class="fx-layer" id="fxLayer"></div>
-        <button class="artifact-btn" id="artifactBtn" aria-label="Добывать артефакт">
+        <button class="artifact-btn" id="artifactBtn" aria-label="Mine the artifact">
           <div class="rune-ring"></div>
           <div class="rune-ring reverse"></div>
           <div class="artifact-glow"></div>
@@ -417,52 +440,68 @@
           </svg>
         </button>
       </div>
-      <div class="hint-text" id="hintText">Нажимай на артефакт, чтобы добывать кристаллы</div>
+      <div class="hint-text" id="hintText">Tap the artifact to mine crystals</div>
     </div>
 
     <div class="screen" id="screen-upgrades">
-      <div class="section-title">⚒️ Улучшения</div>
-      <div class="section-sub">Развивай мощь своего отряда искателей</div>
+      <div class="section-title">⚒️ Upgrades</div>
+      <div class="section-sub">Grow the strength of your hunting party</div>
       <div id="upgradesList"></div>
-      <div class="section-title" style="margin-top:6px;">🔱 Лавка Печатей</div>
-      <div class="section-sub">Редкие артефакты за Печать Древних</div>
+      <div class="section-title" style="margin-top:6px;">🔱 Seal Bazaar</div>
+      <div class="section-sub">Rare relics purchased with Ancient Seals</div>
       <div id="sealsShopList"></div>
     </div>
 
     <div class="screen" id="screen-leaderboard">
-      <div class="section-title">🏆 Рейтинг Охотников</div>
+      <div class="section-title">🏆 Hunter Rankings</div>
       <div class="tabs">
-        <button class="tab-btn active" data-tab="weekly" id="tabWeekly">За неделю</button>
-        <button class="tab-btn" data-tab="alltime" id="tabAlltime">За всё время</button>
+        <button class="tab-btn active" data-tab="weekly" id="tabWeekly">This Week</button>
+        <button class="tab-btn" data-tab="alltime" id="tabAlltime">All Time</button>
       </div>
       <div id="lbList"></div>
     </div>
 
     <div class="screen" id="screen-tasks">
-      <div class="section-title">📜 Задания Гильдии</div>
-      <div class="section-sub">Выполняй задания и получай награды</div>
+      <div class="section-title">📜 Guild Contracts</div>
+      <div class="section-sub">Complete contracts to earn rewards</div>
       <div id="tasksList"></div>
     </div>
 
     <div class="screen" id="screen-settings">
-      <div class="section-title">⚙️ Настройки</div>
+      <div class="section-title">⚙️ Settings</div>
       <div class="settings-row">
         <div>
-          <div class="settings-label">Звук</div>
-          <div class="settings-desc">Звуковые эффекты при добыче</div>
+          <div class="settings-label">Sound</div>
+          <div class="settings-desc">Sound effects while mining</div>
         </div>
         <label class="switch"><input type="checkbox" id="soundToggle" checked><span class="slider"></span></label>
       </div>
       <div class="settings-row">
         <div>
-          <div class="settings-label">Вибрация</div>
-          <div class="settings-desc">Тактильный отклик Telegram</div>
+          <div class="settings-label">Vibration</div>
+          <div class="settings-desc">Telegram haptic feedback</div>
         </div>
         <label class="switch"><input type="checkbox" id="hapticToggle" checked><span class="slider"></span></label>
       </div>
-      <button class="settings-btn" id="shareBtn">🔗 Пригласить друга</button>
-      <button class="settings-btn danger" id="resetBtn">🗑️ Сбросить прогресс</button>
-      <div class="app-footer" id="appFooter">Artifact Hunter · v1.0.0<br>Прогресс сохраняется локально на устройстве</div>
+
+      <div class="pulse-card">
+        <div class="pulse-head">
+          <div class="pulse-title">📡 Market Pulse</div>
+          <div class="pulse-refresh" id="pulseRefresh">Refresh</div>
+        </div>
+        <div class="pulse-sub">Real-world crypto prices, shown for general interest</div>
+        <div id="pulseList">
+          <div class="pulse-row"><div class="pulse-coin"><span class="sym">₿</span>Bitcoin</div><div class="pulse-right"><div class="pulse-price">—</div><div class="pulse-change">—</div></div></div>
+          <div class="pulse-row"><div class="pulse-coin"><span class="sym">Ξ</span>Ethereum</div><div class="pulse-right"><div class="pulse-price">—</div><div class="pulse-change">—</div></div></div>
+          <div class="pulse-row"><div class="pulse-coin"><span class="sym">💎</span>Toncoin</div><div class="pulse-right"><div class="pulse-price">—</div><div class="pulse-change">—</div></div></div>
+        </div>
+        <div class="pulse-updated" id="pulseUpdated">Not loaded yet</div>
+        <div class="pulse-disclaimer">Informational only, not financial advice, and not connected in any way to Crystals, Ancient Seals, or any other in-game value. Artifact Hunter has no real-world currency, token, or exchange listing.</div>
+      </div>
+
+      <button class="settings-btn" id="shareBtn">🔗 Invite a Friend</button>
+      <button class="settings-btn danger" id="resetBtn">🗑️ Reset Progress</button>
+      <div class="app-footer" id="appFooter">Artifact Hunter · v1.0.0<br>Progress is saved locally on this device</div>
     </div>
 
   </div>
@@ -470,11 +509,11 @@
   <div id="toast-layer"></div>
 
   <div id="bottomnav">
-    <button class="nav-btn active" data-screen="mine"><span class="nav-icon">💎</span><span class="nav-lbl">Добыча</span></button>
-    <button class="nav-btn" data-screen="upgrades"><span class="nav-icon">⚒️</span><span class="nav-lbl">Улучшения</span></button>
-    <button class="nav-btn" data-screen="leaderboard"><span class="nav-icon">🏆</span><span class="nav-lbl">Рейтинг</span></button>
-    <button class="nav-btn" data-screen="tasks"><span class="nav-icon">📜</span><span class="nav-lbl">Задания</span></button>
-    <button class="nav-btn" data-screen="settings"><span class="nav-icon">⚙️</span><span class="nav-lbl">Настройки</span></button>
+    <button class="nav-btn active" data-screen="mine"><span class="nav-icon">💎</span><span class="nav-lbl">Mine</span></button>
+    <button class="nav-btn" data-screen="upgrades"><span class="nav-icon">⚒️</span><span class="nav-lbl">Upgrades</span></button>
+    <button class="nav-btn" data-screen="leaderboard"><span class="nav-icon">🏆</span><span class="nav-lbl">Ranks</span></button>
+    <button class="nav-btn" data-screen="tasks"><span class="nav-icon">📜</span><span class="nav-lbl">Contracts</span></button>
+    <button class="nav-btn" data-screen="settings"><span class="nav-icon">⚙️</span><span class="nav-lbl">Settings</span></button>
   </div>
 </div>
 
@@ -557,12 +596,12 @@
   function initIdentity(){
     if(tgUser){
       state.identity.uid = String(tgUser.id);
-      state.identity.name = [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ') || tgUser.username || 'Охотник';
+      state.identity.name = [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ') || tgUser.username || 'Hunter';
       state.identity.username = tgUser.username || null;
       state.identity.photo = tgUser.photo_url || null;
     } else if(!state.identity.uid){
       state.identity.uid = 'guest_' + Math.floor(Math.random()*900000+100000);
-      state.identity.name = 'Охотник #' + state.identity.uid.slice(-4);
+      state.identity.name = 'Hunter #' + state.identity.uid.slice(-4);
     }
   }
   initIdentity();
@@ -570,53 +609,53 @@
   /* ================= Config ================= */
   var UPGRADES = {
     clickPower: {
-      name: 'Сила клика', icon:'⚔️',
-      desc: function(lvl){ return '+1 кристалл за клик (сейчас: ' + (1+lvl) + ')'; },
+      name: 'Tap Power', icon:'⚔️',
+      desc: function(lvl){ return '+1 crystal per tap (now: ' + (1+lvl) + ')'; },
       baseCost: 45, growth: 1.16,
     },
     autoMiner: {
-      name: 'Авто-Добытчик', icon:'🤖',
-      desc: function(lvl){ return '+2 кристалла/сек (сейчас: ' + (lvl*2) + '/с)'; },
+      name: 'Auto-Miner', icon:'🤖',
+      desc: function(lvl){ return '+2 crystals/sec (now: ' + (lvl*2) + '/s)'; },
       baseCost: 90, growth: 1.18,
     },
     energyCap: {
-      name: 'Запас Энергии', icon:'🔋',
-      desc: function(lvl){ return '+100 макс. энергии (сейчас: ' + (500+lvl*100) + ')'; },
+      name: 'Energy Reserve', icon:'🔋',
+      desc: function(lvl){ return '+100 max energy (now: ' + (500+lvl*100) + ')'; },
       baseCost: 140, growth: 1.20,
     },
     rechargeSpeed: {
-      name: 'Скорость Восстановления', icon:'🌀',
-      desc: function(lvl){ return '+0.5 энергии/сек (сейчас: ' + (1+lvl*0.5).toFixed(1) + '/с)'; },
+      name: 'Recharge Rate', icon:'🌀',
+      desc: function(lvl){ return '+0.5 energy/sec (now: ' + (1+lvl*0.5).toFixed(1) + '/s)'; },
       baseCost: 120, growth: 1.19,
     }
   };
 
   var SEALS_SHOP = [
-    { id:'refill', name:'Полное восстановление', icon:'💧', desc:'Мгновенно восполняет всю энергию', cost:3 },
-    { id:'cpsboost', name:'Прилив Силы', icon:'🔥', desc:'x2 к авто-добыче на 5 минут', cost:5 },
-    { id:'critboost', name:'Ярость Охотника', icon:'✨', desc:'+25% к шансу крита на 3 минуты', cost:4 }
+    { id:'refill', name:'Full Restoration', icon:'💧', desc:'Instantly refills all energy', cost:3 },
+    { id:'cpsboost', name:'Surge of Power', icon:'🔥', desc:'x2 auto-mining for 5 minutes', cost:5 },
+    { id:'critboost', name:"Hunter's Fury", icon:'✨', desc:'+25% crit chance for 3 minutes', cost:4 }
   ];
 
   var TASKS_META = {
     join_channel: {
-      name:'Вступить в гильдию', icon:'📣', reward:{crystals:500, seals:1},
-      desc:'Подпишись на канал гильдии Artifact Hunter, чтобы быть в курсе новых событий и получить награду.'
+      name:'Join the Guild', icon:'📣', reward:{crystals:500, seals:1},
+      desc:'Subscribe to the Artifact Hunter guild channel to stay on top of new events, and earn a reward.'
     },
     invite_friend: {
-      name:'Призвать соратника', icon:'🤝', reward:{crystals:300, seals:1},
-      desc:'Пригласи друга в игру по своей ссылке. Задание можно выполнять повторно, раз в 60 секунд.'
+      name:'Summon an Ally', icon:'🤝', reward:{crystals:300, seals:1},
+      desc:'Invite a friend to the game using your referral link. This contract can be repeated once every 60 seconds.'
     },
     milestone_10000: {
-      name:'Собрать 10,000 кристаллов', icon:'💠', reward:{crystals:1000, seals:3},
-      desc:'Накопи 10,000 кристаллов за всё время (учитывается общая добыча, не текущий баланс).'
+      name:'Collect 10,000 Crystals', icon:'💠', reward:{crystals:1000, seals:3},
+      desc:'Mine 10,000 crystals in total (counts lifetime mining, not your current balance).'
     },
     upgrade_master: {
-      name:'Мастер Улучшений', icon:'🛠️', reward:{crystals:800, seals:2},
-      desc:'Прокачай любое улучшение до 5 уровня.'
+      name:'Upgrade Master', icon:'🛠️', reward:{crystals:800, seals:2},
+      desc:'Raise any upgrade to level 5.'
     },
     energy_adept: {
-      name:'Адепт Энергии', icon:'🌟', reward:{crystals:600, seals:2},
-      desc:'Прокачай "Запас Энергии" до 3 уровня.'
+      name:'Energy Adept', icon:'🌟', reward:{crystals:600, seals:2},
+      desc:'Raise Energy Reserve to level 3.'
     }
   };
 
@@ -660,7 +699,7 @@
     var energyGain = s.rechargeRate * cappedSec;
     state.energy = Math.min(s.maxEnergy, state.energy + energyGain);
     if(earned > 0){
-      queueToast('Пока тебя не было, добыто +' + formatNumber(earned) + ' 💎');
+      queueToast('While you were away, +' + formatNumber(earned) + ' 💎 was mined');
     }
   }
 
@@ -761,10 +800,10 @@
     var now = Date.now();
     var badges = [];
     if(state.boosts.cpsUntil > now){
-      badges.push('🔥 x2 добыча ' + Math.ceil((state.boosts.cpsUntil-now)/1000) + 'с');
+      badges.push('🔥 x2 mining ' + Math.ceil((state.boosts.cpsUntil-now)/1000) + 's');
     }
     if(state.boosts.critUntil > now){
-      badges.push('✨ +25% крит ' + Math.ceil((state.boosts.critUntil-now)/1000) + 'с');
+      badges.push('✨ +25% crit ' + Math.ceil((state.boosts.critUntil-now)/1000) + 's');
     }
     boostsRow.innerHTML = badges.map(function(b){ return '<div class="boost-badge">'+b+'</div>'; }).join('');
   }
@@ -772,7 +811,7 @@
   function renderProfile(){
     var nameEl = document.getElementById('profileName');
     var avatarEl = document.getElementById('avatar');
-    nameEl.textContent = state.identity.name || 'Охотник';
+    nameEl.textContent = state.identity.name || 'Hunter';
     if(state.identity.photo){
       avatarEl.innerHTML = '<img src="'+state.identity.photo+'" alt="avatar">';
     } else {
@@ -781,7 +820,7 @@
     }
   }
 
-  /* ================= Click / mining logic ================= */
+  /* ================= Tap / mining logic ================= */
   var artifactBtn = document.getElementById('artifactBtn');
   var fxLayer = document.getElementById('fxLayer');
   var shockwave = document.getElementById('shockwave');
@@ -815,7 +854,7 @@
   function handleMine(evt){
     var s = stats();
     if(state.energy < CLICK_ENERGY_COST){
-      hintText.textContent = 'Недостаточно энергии! Подожди восстановления.';
+      hintText.textContent = 'Not enough energy! Wait for it to recharge.';
       haptic('error');
       return;
     }
@@ -825,13 +864,8 @@
     addCrystals(gained);
 
     var rect = artifactBtn.getBoundingClientRect();
-    var appRect = document.getElementById('app').getBoundingClientRect();
-    var cx = (evt && evt.touches && evt.touches[0]) ? evt.touches[0].clientX - appRect.left : rect.left + rect.width/2 - appRect.left;
-    var cy = (evt && evt.touches && evt.touches[0]) ? evt.touches[0].clientY - appRect.top : rect.top + rect.height/2 - appRect.top;
-    var localX = cx - (rect.left - appRect.left) + rect.width/2 - 20;
-    var localY = cy - (rect.top - appRect.top) - 10;
 
-    spawnFly((isCrit ? '×' + CRIT_MULTI + ' КРИТ +' : '+') + formatNumber(gained), isCrit, rect.width/2 - 10, rect.height/2 - 10);
+    spawnFly((isCrit ? '×' + CRIT_MULTI + ' CRIT +' : '+') + formatNumber(gained), isCrit, rect.width/2 - 10, rect.height/2 - 10);
     spawnParticles(rect.width/2, rect.height/2, isCrit);
 
     shockwave.classList.remove('play'); void shockwave.offsetWidth; shockwave.classList.add('play');
@@ -839,15 +873,15 @@
       critFlash.classList.remove('play'); void critFlash.offsetWidth; critFlash.classList.add('play');
       playTone(880, 0.25, 'square');
       haptic('crit');
-      hintText.textContent = 'Критический удар! ×' + CRIT_MULTI + ' добыча';
+      hintText.textContent = 'Critical strike! ×' + CRIT_MULTI + ' yield';
       if(Math.random() < SEAL_DROP_CHANCE){
         state.seals += 1;
-        queueToast('Найден осколок Печати Древних! +1 🔱');
+        queueToast('Found a shard of an Ancient Seal! +1 🔱');
       }
     } else {
       playTone(520, 0.12, 'sine');
       haptic('click');
-      hintText.textContent = 'Нажимай на артефакт, чтобы добывать кристаллы';
+      hintText.textContent = 'Tap the artifact to mine crystals';
     }
 
     checkTaskProgress();
@@ -875,10 +909,10 @@
           '<div class="upgrade-info">' +
             '<div class="upgrade-name">'+u.name+'</div>' +
             '<div class="upgrade-desc">'+u.desc(lvl)+'</div>' +
-            '<div class="upgrade-level">Уровень '+lvl+'</div>' +
+            '<div class="upgrade-level">Level '+lvl+'</div>' +
           '</div>' +
           '<div class="upgrade-buy'+(canAfford?'':' disabled')+'" data-type="'+type+'">' +
-            '<span class="buy-lbl">Купить</span>' +
+            '<span class="buy-lbl">Buy</span>' +
             '<span>'+formatNumber(cost)+' 💎</span>' +
           '</div>' +
         '</div>';
@@ -901,7 +935,7 @@
             '<div class="upgrade-desc">'+item.desc+'</div>' +
           '</div>' +
           '<div class="seals-buy'+((canAfford && !active)?'':' disabled')+'" data-id="'+item.id+'">' +
-            (active ? 'Активно' : (formatNumber(item.cost)+' 🔱')) +
+            (active ? 'Active' : (formatNumber(item.cost)+' 🔱')) +
           '</div>' +
         '</div>';
     });
@@ -914,12 +948,12 @@
   function buyUpgrade(type){
     var lvl = state.levels[type];
     var cost = costFor(type, lvl);
-    if(state.crystals < cost){ haptic('error'); queueToast('Недостаточно кристаллов'); return; }
+    if(state.crystals < cost){ haptic('error'); queueToast('Not enough crystals'); return; }
     state.crystals -= cost;
     state.levels[type] += 1;
     haptic('buy');
     playTone(660, 0.15, 'triangle');
-    queueToast(UPGRADES[type].name + ' улучшено до уровня ' + state.levels[type]);
+    queueToast(UPGRADES[type].name + ' upgraded to level ' + state.levels[type]);
     checkTaskProgress();
     renderUpgrades();
     renderTop();
@@ -931,18 +965,18 @@
     if(!item) return;
     var now = Date.now();
     if((id==='cpsboost' && state.boosts.cpsUntil>now) || (id==='critboost' && state.boosts.critUntil>now)) return;
-    if(state.seals < item.cost){ haptic('error'); queueToast('Недостаточно Печатей Древних'); return; }
+    if(state.seals < item.cost){ haptic('error'); queueToast('Not enough Ancient Seals'); return; }
     state.seals -= item.cost;
     if(id === 'refill'){
       var s = stats();
       state.energy = s.maxEnergy;
-      queueToast('Энергия полностью восстановлена!');
+      queueToast('Energy fully restored!');
     } else if(id === 'cpsboost'){
       state.boosts.cpsUntil = now + 5*60*1000;
-      queueToast('Прилив Силы активирован на 5 минут!');
+      queueToast('Surge of Power active for 5 minutes!');
     } else if(id === 'critboost'){
       state.boosts.critUntil = now + 3*60*1000;
-      queueToast('Ярость Охотника активирована на 3 минуты!');
+      queueToast("Hunter's Fury active for 3 minutes!");
     }
     haptic('buy');
     playTone(740, 0.18, 'triangle');
@@ -953,11 +987,11 @@
 
   /* ================= Leaderboard ================= */
   var NPC_NAMES = [
-    'Тень Руны','Ветер Пустошей','Огнеклинок','Северный Страж','Хранитель Печати',
-    'Лунная Искательница','Пепельный Странник','Кристальный Барон','Гроза Гробниц','Забытый Маг',
-    'Странник Бездны','Аргентум','Рунный Клинок','Тихий Охотник','Заклинатель Теней',
-    'Древний Странник','Искра Забвения','Хранительница Врат','Стальной Огр','Волчий Шаман',
-    'Пилигрим Бурь','Астральный Вор','Мираж','Гончий Пёс Судьбы','Ледяная Сирена'
+    'Shade of Runes','Windwalker','Flameblade','Northern Warden','Sealkeeper',
+    'Moonlit Seeker','Ashen Wanderer','Crystal Baron','Tombstorm','Forgotten Mage',
+    'Voidwalker','Argentum','Runeblade','Silent Hunter','Shadow Caller',
+    'Ancient Wanderer','Spark of Oblivion','Gatekeeper','Steel Ogre','Wolf Shaman',
+    'Storm Pilgrim','Astral Thief','Mirage','Fatehound','Frost Siren'
   ];
   var NPC_EMOJI = ['🗡️','🛡️','🏹','🔮','🐉','⚜️','🦉','🐺','👑','🪓','🧙','🦂','🦅','🐍','💀'];
 
@@ -986,11 +1020,10 @@
   var currentLbTab = 'weekly';
   function renderLeaderboard(){
     var list = buildNpcList(currentLbTab);
-    var myScore = currentLbTab === 'weekly' ? state.lifetimeCrystals : state.lifetimeCrystals;
-    list.push({ name: state.identity.name || 'Ты', emoji:'🧑\u200d🚀', score: myScore, isMe:true });
+    var myScore = state.lifetimeCrystals;
+    list.push({ name: state.identity.name || 'You', emoji:'🧑\u200d🚀', score: myScore, isMe:true });
     list.sort(function(a,b){ return b.score - a.score; });
 
-    var myIndex = list.findIndex(function(p){ return p.isMe; });
     var html = '';
     list.forEach(function(p, idx){
       var rank = idx+1;
@@ -1000,11 +1033,11 @@
         '<div class="lb-row'+(p.isMe?' me':'')+'">' +
           '<div class="lb-rank '+rankClass+'">'+medal+'</div>' +
           '<div class="lb-avatar">'+p.emoji+'</div>' +
-          '<div class="lb-name">'+p.name+(p.isMe?' (ты)':'')+'</div>' +
+          '<div class="lb-name">'+p.name+(p.isMe?' (you)':'')+'</div>' +
           '<div class="lb-score">'+formatNumber(p.score)+'</div>' +
         '</div>';
     });
-    document.getElementById('lbList').innerHTML = html || '<div class="hint-text">Пока никого нет</div>';
+    document.getElementById('lbList').innerHTML = html || '<div class="hint-text">No hunters here yet</div>';
     document.getElementById('tabWeekly').classList.toggle('active', currentLbTab==='weekly');
     document.getElementById('tabAlltime').classList.toggle('active', currentLbTab==='alltime');
   }
@@ -1038,7 +1071,7 @@
     state.seals += reward.seals;
     haptic('buy');
     playTone(920, 0.25, 'triangle');
-    queueToast('Награда получена: +' + formatNumber(reward.crystals) + ' 💎 +' + reward.seals + ' 🔱');
+    queueToast('Reward claimed: +' + formatNumber(reward.crystals) + ' 💎 +' + reward.seals + ' 🔱');
     renderTop();
     saveState();
     renderTasks();
@@ -1048,34 +1081,31 @@
     checkTaskProgress();
     var html = '';
 
-    // join channel
     var jc = state.tasks.join_channel;
     html += taskCardHtml('join_channel', jc.claimed, function(){
       if(!jc.opened){
-        return '<div class="task-actions"><div class="task-btn" data-action="open-channel">Открыть канал</div></div>';
+        return '<div class="task-actions"><div class="task-btn" data-action="open-channel">Open Channel</div></div>';
       }
-      return '<div class="task-actions"><div class="task-btn claim" data-action="claim-channel">Забрать награду</div></div>';
+      return '<div class="task-actions"><div class="task-btn claim" data-action="claim-channel">Claim Reward</div></div>';
     }());
 
-    // invite friend
     var inv = state.tasks.invite_friend;
     var now = Date.now();
     var cooldownLeft = Math.max(0, Math.ceil((inv.lastClaim + 60000 - now)/1000));
-    var inviteInner = '<div class="task-actions"><div class="task-btn" data-action="share-invite">Поделиться ссылкой</div></div>';
+    var inviteInner = '<div class="task-actions"><div class="task-btn" data-action="share-invite">Share Invite Link</div></div>';
     if(cooldownLeft > 0){
-      inviteInner += '<div class="task-cooldown">Повтор через '+cooldownLeft+' с · выполнено раз: '+inv.count+'</div>';
+      inviteInner += '<div class="task-cooldown">Available again in '+cooldownLeft+'s · times completed: '+inv.count+'</div>';
     } else {
-      inviteInner += '<div class="task-cooldown">Готово к выполнению · выполнено раз: '+inv.count+'</div>';
+      inviteInner += '<div class="task-cooldown">Ready · times completed: '+inv.count+'</div>';
     }
     html += taskCardHtml('invite_friend', false, inviteInner);
 
-    // milestones
     ['milestone_10000','upgrade_master','energy_adept'].forEach(function(id){
       var t = state.tasks[id];
       var inner;
-      if(t.claimed){ inner = '<div class="task-actions"><div class="task-btn done">Выполнено ✓</div></div>'; }
-      else if(t.ready){ inner = '<div class="task-actions"><div class="task-btn claim" data-action="claim-'+id+'">Забрать награду</div></div>'; }
-      else { inner = '<div class="task-actions"><div class="task-btn done">В процессе…</div></div>'; }
+      if(t.claimed){ inner = '<div class="task-actions"><div class="task-btn done">Completed ✓</div></div>'; }
+      else if(t.ready){ inner = '<div class="task-actions"><div class="task-btn claim" data-action="claim-'+id+'">Claim Reward</div></div>'; }
+      else { inner = '<div class="task-actions"><div class="task-btn done">In progress…</div></div>'; }
       html += taskCardHtml(id, t.claimed, inner);
     });
 
@@ -1124,11 +1154,11 @@
         var now = Date.now();
         var inv = state.tasks.invite_friend;
         if(now - inv.lastClaim < 60000){
-          queueToast('Подожди немного перед повторным приглашением');
+          queueToast('Please wait before inviting again');
           return;
         }
         var link = getReferralLink();
-        var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent('Присоединяйся к Artifact Hunter и добывай древние кристаллы вместе со мной!');
+        var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent('Join me in Artifact Hunter and mine ancient crystals together!');
         if(tg && tg.openTelegramLink){ tg.openTelegramLink(shareUrl); }
         else { window.open(shareUrl, '_blank'); }
         inv.lastClaim = now;
@@ -1166,22 +1196,93 @@
 
   function doShare(){
     var link = getReferralLink();
-    var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent('Присоединяйся к Artifact Hunter и добывай древние кристаллы вместе со мной!');
+    var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent('Join me in Artifact Hunter and mine ancient crystals together!');
     if(tg && tg.openTelegramLink){ tg.openTelegramLink(shareUrl); }
     else { window.open(shareUrl, '_blank'); }
   }
   document.getElementById('shareBtn').addEventListener('click', function(){ doShare(); haptic('click'); });
 
   document.getElementById('resetBtn').addEventListener('click', function(){
-    if(window.confirm('Сбросить весь прогресс безвозвратно?')){
+    if(window.confirm('Reset all progress permanently?')){
       localStorage.removeItem(SAVE_KEY);
       state = defaultState();
       initIdentity();
       renderAll();
-      queueToast('Прогресс сброшен');
+      queueToast('Progress reset');
       haptic('error');
     }
   });
+
+  /* ================= Market Pulse (real-world crypto info, purely informational) ================= */
+  /* This section shows live public market data for well-known real cryptocurrencies. */
+  /* It is entirely separate from the game economy: Crystals and Ancient Seals have no */
+  /* real-world value, are not tradable, and are never described as tokens or coins. */
+  var PULSE_COINS = [
+    { id:'bitcoin', symbol:'₿', label:'Bitcoin' },
+    { id:'ethereum', symbol:'Ξ', label:'Ethereum' },
+    { id:'the-open-network', symbol:'💎', label:'Toncoin' }
+  ];
+  var PULSE_FALLBACK = {
+    bitcoin: { price:78746, change:-0.46 },
+    ethereum: { price:2475, change:-0.27 },
+    'the-open-network': { price:1.44, change:-0.99 }
+  };
+  var pulseListEl = document.getElementById('pulseList');
+  var pulseUpdatedEl = document.getElementById('pulseUpdated');
+  var pulseRefreshBtn = document.getElementById('pulseRefresh');
+
+  function formatUsd(n){
+    if(n >= 1000) return '$' + n.toLocaleString('en-US', { maximumFractionDigits:0 });
+    if(n >= 1) return '$' + n.toFixed(2);
+    return '$' + n.toFixed(4);
+  }
+
+  function renderPulse(data, isFallback){
+    var html = '';
+    PULSE_COINS.forEach(function(c){
+      var d = data[c.id];
+      if(!d){
+        html += '<div class="pulse-row"><div class="pulse-coin"><span class="sym">'+c.symbol+'</span>'+c.label+'</div><div class="pulse-right"><div class="pulse-price">n/a</div></div></div>';
+        return;
+      }
+      var changeClass = d.change >= 0 ? 'up' : 'down';
+      var changeSign = d.change >= 0 ? '+' : '';
+      html += '' +
+        '<div class="pulse-row">' +
+          '<div class="pulse-coin"><span class="sym">'+c.symbol+'</span>'+c.label+'</div>' +
+          '<div class="pulse-right">' +
+            '<div class="pulse-price">'+formatUsd(d.price)+'</div>' +
+            '<div class="pulse-change '+changeClass+'">'+changeSign+d.change.toFixed(2)+'% 24h</div>' +
+          '</div>' +
+        '</div>';
+    });
+    pulseListEl.innerHTML = html;
+    var stamp = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    pulseUpdatedEl.textContent = (isFallback ? 'Offline snapshot · ' : 'Live · ') + 'updated ' + stamp;
+  }
+
+  function loadPulse(){
+    pulseRefreshBtn.classList.add('spinning');
+    var ids = PULSE_COINS.map(function(c){ return c.id; }).join(',');
+    var url = 'https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd&include_24hr_change=true';
+    fetch(url).then(function(res){
+      if(!res.ok) throw new Error('bad response');
+      return res.json();
+    }).then(function(json){
+      var data = {};
+      PULSE_COINS.forEach(function(c){
+        if(json[c.id]){
+          data[c.id] = { price: json[c.id].usd, change: json[c.id].usd_24h_change || 0 };
+        }
+      });
+      renderPulse(Object.keys(data).length ? data : PULSE_FALLBACK, Object.keys(data).length === 0);
+    }).catch(function(){
+      renderPulse(PULSE_FALLBACK, true);
+    }).finally(function(){
+      pulseRefreshBtn.classList.remove('spinning');
+    });
+  }
+  pulseRefreshBtn.addEventListener('click', function(){ loadPulse(); haptic('click'); });
 
   /* ================= Game loop ================= */
   function tick(){
@@ -1215,6 +1316,8 @@
 
   applyOfflineProgress();
   renderAll();
+  renderPulse(PULSE_FALLBACK, true);
+  loadPulse();
   saveState();
 
 })();
